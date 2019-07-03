@@ -30,4 +30,15 @@ public class CustomerController {
         List<Customer> customerList = customerRepository.findAll();
         return customerList;
     }
+
+    @GetMapping("/{id}")
+    public Customer getCustomer(@PathVariable Long id) {
+        Customer customer = customerRepository.findById(id).get();
+        return customer;
+    }
+
+    @DeleteMapping("/{id}")
+    public void delCustomer(@PathVariable Long id) {
+        customerRepository.deleteById(id);
+    }
 }
