@@ -4,12 +4,13 @@ import lombok.Data;
 
 import javax.persistence.*;
 
+
 /**
  * @author tongzhou
  */
 @Entity
 @Data
-@Table(name = "customer")
+@NamedQuery(name="Customer.findByFirstName",query = "select c from Customer c where c.firstName = ?1")
 public class Customer {
 
     @Id
