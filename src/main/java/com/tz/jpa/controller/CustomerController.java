@@ -127,4 +127,13 @@ public class CustomerController {
     public List<Customer> findByName3(@PathVariable String name) {
         return customerRepository.findByName3(name);
     }
+    /**
+     * 更新
+     * @param customer
+     * @return
+     */
+    @PutMapping
+    public void updateCustomer(@RequestBody Customer customer) {
+        customerRepository.updateCustomer(customer);
+    }
 }

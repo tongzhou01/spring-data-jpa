@@ -2,8 +2,10 @@ package com.tz.jpa.repository;
 
 import com.tz.jpa.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +38,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * @param firstName
      * @return
      */
+//    @Query("select c from Customer c where c.firstName = ?#{#firstName}")
+//    @Query("select c from Customer c where c.firstName = :#{#firstName}")
+//    @Query("select c from Customer c where c.firstName = ?#{[0]}")
+//    @Query("select c from Customer c where c.firstName = ?1")
+//    @Query("select c from Customer c where c.firstName = ?#{firstName}")
     @Query("select c from Customer c where c.firstName = ?1")
     List<Customer> findByFirstName2(String firstName);
 
@@ -69,6 +76,17 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * @param name
      * @return
      */
-    @Query(nativeQuery = true, value = "select * from customer c where c.first_name like concat('%',:name,'%')")
+    @Query(nativeQuery = true, value = "select * from customer c where c.first_name like concat('%',?1,'%')")
     List<Customer> findByName3(String name);
+
+    /**
+     * 更新
+     * @param customer
+     */
+    @Modifying
+    @Transactional(rollbackFor = Exception.class)
+//    @Query("update Customer c set c.firstName = :#{#customer.firstName}, c.lastName = :#{#customer.lastName} where c.id = :#{#customer.id}")
+//    @Query("update Customer c set c.firstName = ?#{#customer.firstName}, c.lastName = ?#{#customer.lastName} where c.id = ?#{#customer.id}")
+    @Query("update Customer c set c.firstName = :#{#customer.firstName}, c.lastName = :#{#customer.lastName} where c.id = :#{#customer.id}")
+    void updateCustomer(Customer customer);
 }
