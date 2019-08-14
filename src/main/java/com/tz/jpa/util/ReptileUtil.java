@@ -8,10 +8,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -41,44 +43,48 @@ public class ReptileUtil {
 
     public static Data parse(String html, String baseUrl) throws URISyntaxException, FileNotFoundException {
         Document doc = Jsoup.parse(html);
-        // 获取链接列表
-        List<String> links = doc.select("#photos > ul > li > a > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
-        for (String link : links) {
-            URI uri = new URI(link);
-            File file = new File(uri);
-
+        // 获取图片详情链接
+        List<String> personLinks = doc.select("#photos > ul > li > a").stream().map(element -> element.attr("href")).collect(Collectors.toList());
+        for (String link : personLinks) {
+            try {
+                parse2(link, "");
+//                FileUtil.downLoadFromUrl(link, "tj_", "D:\\personImage\\tuji");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        /*// 获取数据列表
-        List<Map<String, String>> results = doc.select("#comments > div.comment-item")
-                .stream()
-                .map(div -> {
-                    Map<String, String> data = new HashMap<>();
+        return new Data(personLinks, null);
+    }
 
-                    String author = div.selectFirst("h3 > span.comment-info > a").text();
-                    String date = div.selectFirst("h3 > span.comment-info > span.comment-time").text();
-                    Element rating = div.selectFirst("h3 > span.comment-info > span.rating");
-                    String star = null;
-                    if (rating != null) {
-                        // allstar40 rating
-                        star = rating.attr("class");
-                        star = star.substring(7, 9);
-                    }
-                    String vote = div.selectFirst("h3 > span.comment-vote > span.votes").text();
-                    String comment = div.selectFirst("div.comment > p").text();
+    public static Data parse2(String url, String baseUrl) throws URISyntaxException, FileNotFoundException {
+        String id = "";
+        if (url.endsWith("/")) {
+            id = url.substring(0, url.length() - 1);
+        }
+        id = id.substring(id.lastIndexOf("/") + 1);
+        Document doc = Jsoup.parse(download(url));
+        // 获取图片详情链接
+        List<String> maxImageLinks = doc.select(".article > .photo-show > .photo-wp > .mainphoto > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
+        for (String link : maxImageLinks) {
+            try {
+                System.out.println("max----------" + link);
+                FileUtil.downLoadFromUrl(link, "tj_" + id + ".jpg", "D:\\personImage\\tuji");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-                    data.put("author", author);
-                    data.put("date", date);
-                    if (star != null) {
-                        data.put("star", star);
-                    }
-                    data.put("vote", vote);
-                    data.put("comment", comment);
+        List<String> minImageLinks = doc.select("#" + id + " > a > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
+        for (String link : minImageLinks) {
+            try {
+                System.out.println("min----------" + link);
+                FileUtil.downLoadFromUrl(link, "tj_" + id + "_min.jpg", "D:\\personImage\\tuji");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-                    return data;
-                })
-                .collect(Collectors.toList());*/
-
-        return new Data(links, null);
+        return new Data(minImageLinks, null);
     }
 
     /**
@@ -107,8 +113,9 @@ public class ReptileUtil {
         return null;
     }
 
-    public static void main(String[] args) throws URISyntaxException, FileNotFoundException {
-        String url = "https://movie.douban.com/celebrity/1054531/";
+    public static void main(String[] args) throws URISyntaxException, FileNotFoundException, UnsupportedEncodingException {
+        String code = "1048026";
+        String url = "https://movie.douban.com/celebrity/" + code + "/";
         String html = download(url);
         Data data = parse(html, "");
         System.out.println(data.toString());
