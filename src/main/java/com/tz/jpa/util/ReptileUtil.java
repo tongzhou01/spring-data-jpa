@@ -8,11 +8,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * ReptileUtil
@@ -40,8 +40,7 @@ public class ReptileUtil {
     public static Data parse(String html, String baseUrl) {
         Document doc = Jsoup.parse(html);
         // 获取链接列表
-        Elements select = doc.select("#photos");
-        System.out.println(select.toString());
+        List<String> links = doc.select("#photos > ul > li > a > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
         /*// 获取数据列表
         List<Map<String, String>> results = doc.select("#comments > div.comment-item")
                 .stream()
@@ -72,7 +71,7 @@ public class ReptileUtil {
                 })
                 .collect(Collectors.toList());*/
 
-        return new Data(null, null);
+        return new Data(links, null);
     }
 
     /**
