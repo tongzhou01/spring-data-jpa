@@ -9,7 +9,9 @@ import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -37,10 +39,15 @@ public class ReptileUtil {
         private List<T> results;
     }
 
-    public static Data parse(String html, String baseUrl) {
+    public static Data parse(String html, String baseUrl) throws URISyntaxException, FileNotFoundException {
         Document doc = Jsoup.parse(html);
         // 获取链接列表
         List<String> links = doc.select("#photos > ul > li > a > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
+        for (String link : links) {
+            URI uri = new URI(link);
+            File file = new File(uri);
+
+        }
         /*// 获取数据列表
         List<Map<String, String>> results = doc.select("#comments > div.comment-item")
                 .stream()
@@ -100,7 +107,7 @@ public class ReptileUtil {
         return null;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException, FileNotFoundException {
         String url = "https://movie.douban.com/celebrity/1054531/";
         String html = download(url);
         Data data = parse(html, "");
