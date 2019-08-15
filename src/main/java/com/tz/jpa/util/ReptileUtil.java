@@ -1,19 +1,13 @@
 package com.tz.jpa.util;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -32,38 +26,27 @@ public class ReptileUtil {
             .connectTimeout(3000, TimeUnit.MILLISECONDS)
             .build();
 
-    @lombok.Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Data<T> {
-
-        private List<String> links;
-        private List<T> results;
-    }
-
-    public static Data parse(String html, String baseUrl) throws URISyntaxException, FileNotFoundException {
+    public static void parse(String html) {
         Document doc = Jsoup.parse(html);
         // 获取图片详情链接
         List<String> personLinks = doc.select("#photos > ul > li > a").stream().map(element -> element.attr("href")).collect(Collectors.toList());
         for (String link : personLinks) {
             try {
-                parse2(link, "");
-//                FileUtil.downLoadFromUrl(link, "tj_", "D:\\personImage\\tuji");
-            } catch (IOException e) {
+                parse2(link);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return new Data(personLinks, null);
     }
 
-    public static Data parse2(String url, String baseUrl) throws URISyntaxException, FileNotFoundException {
+    public static void parse2(String url) {
         String id = "";
         if (url.endsWith("/")) {
             id = url.substring(0, url.length() - 1);
         }
         id = id.substring(id.lastIndexOf("/") + 1);
         Document doc = Jsoup.parse(download(url));
-        // 获取图片详情链接
+        // 获取大图
         List<String> maxImageLinks = doc.select(".article > .photo-show > .photo-wp > .mainphoto > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
         for (String link : maxImageLinks) {
             try {
@@ -73,7 +56,7 @@ public class ReptileUtil {
                 e.printStackTrace();
             }
         }
-
+        // 获取小图
         List<String> minImageLinks = doc.select("#" + id + " > a > img").stream().map(element -> element.attr("src")).collect(Collectors.toList());
         for (String link : minImageLinks) {
             try {
@@ -83,8 +66,6 @@ public class ReptileUtil {
                 e.printStackTrace();
             }
         }
-
-        return new Data(minImageLinks, null);
     }
 
     /**
@@ -111,13 +92,5 @@ public class ReptileUtil {
             log.error("下载网页[{}]失败!", url, e);
         }
         return null;
-    }
-
-    public static void main(String[] args) throws URISyntaxException, FileNotFoundException, UnsupportedEncodingException {
-        String code = "1048026";
-        String url = "https://movie.douban.com/celebrity/" + code + "/";
-        String html = download(url);
-        Data data = parse(html, "");
-        System.out.println(data.toString());
     }
 }
