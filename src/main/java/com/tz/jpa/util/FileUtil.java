@@ -1,9 +1,11 @@
 package com.tz.jpa.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+@Slf4j
 public class FileUtil {
 
     /**
@@ -33,6 +35,10 @@ public class FileUtil {
             saveDir.mkdirs();
         }
         File file = new File(saveDir + File.separator + fileName);
+        if (file.exists()) {
+            log.debug("warn:" + saveDir + File.separator + fileName + " already exists!");
+            return;
+        }
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(getData);
         if (fos != null) {
@@ -41,9 +47,7 @@ public class FileUtil {
         if (inputStream != null) {
             inputStream.close();
         }
-
-
-        System.out.println("info:" + url + " download success");
+        log.debug("download:" + saveDir + File.separator + fileName + " success!");
 
     }
 
